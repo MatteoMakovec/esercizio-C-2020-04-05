@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <string.h>
 
+// FUNZIONA, MA LA PRIMA RIGA NON VIENE MAI CONFRONTATA
 
 typedef struct{
 	char *char_array;
@@ -49,38 +50,33 @@ int main(int argc, char *argv[]) {
 	int ch;
 	int count_lines = 1;
 	int count_chars = 1;
-	char *readLine = calloc(count_chars, sizeof(char));
 	line *lines = calloc(count_lines, sizeof(line));
+	lines[count_lines-1].char_array = calloc(count_chars, sizeof(char));
 
 	while((ch = getchar()) != EOF){
 		if(ch == '\n'){
-			lines[count_lines - 1].char_array = readLine;
-			lines[count_lines - 1].length = count_chars;
 			compareLines(lines, count_lines);
 			count_lines++;
 			count_chars = 1;
-			readLine = calloc(count_chars, sizeof(char));
-			if (readLine == NULL) {
-				perror("calloc readLine error!");
-				exit(EXIT_FAILURE);
-			}
-			lines = realloc(count_lines, sizeof(line));
+			lines = realloc(lines, count_lines * sizeof(line));
 			if (lines == NULL) {
 				perror("realloc lines error!");
 				exit(EXIT_FAILURE);
 			}
+			else{
+				lines[count_lines-1].char_array = calloc(count_chars, sizeof(char));
+				if (lines[count_lines-1].char_array == NULL) {
+					perror("calloc lines[count_lines-1] error!");
+					exit(EXIT_FAILURE);
+				}
+			}
 		}
 		else{
-			lines[count_lines -1].char_array = realloc(lines[count_lines -1].char_array, count_chars * sizeof(char));
-			if (readLine == NULL) {
-				perror("realloc readLine error!");
-				exit(EXIT_FAILURE);
-			}
-
-			lines[count_lines -1].char_array[count_chars -1] = ch;
-			lines[count_lines -1].length = count_chars;
+			lines[count_lines-1].char_array = realloc(lines[count_lines-1].char_array,
+					count_chars * sizeof(char));
+			lines[count_lines-1].char_array[count_chars-1] = ch;
+			lines[count_lines-1].length = count_chars;
 			count_chars++;
-
 		}
 	}
 
@@ -91,13 +87,13 @@ int main(int argc, char *argv[]) {
 void compareLines(line *lines, int size) {
 	for(int i = size-2; i > 0; i--){
 		if(lines[i].length == lines[size-1].length){
-			letsCompare(lines[i].char_array, lines[size-1].char_array, lines[i].length, size-i);
+			letsCompare(lines[i].char_array, lines[size-1].char_array, lines[i].length, size-i-1);
 		}
 	}
 }
 
 void letsCompare(char *array_toCompare, char *array_pattern, int length, int line) {
-	if(strcmp(array_toCompare, array_pattern)){
-		printf("***questa riga è stata già letta %d righe fa***", line);
+	if((strcmp(array_toCompare, array_pattern)) == 0){
+		printf("***questa riga ('%s') è stata già letta %d righe fa***\n", array_pattern, line);
 	}
 }
